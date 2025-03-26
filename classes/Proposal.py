@@ -59,11 +59,12 @@ def add_offer_to_proposal(muid:int, proposal_id:int, offer_id:int, airport:str, 
             "capacity":{
                 "adult":adults,
                 "child":children,
-                "infant":infants,
+                "infant":0,
                 "room":1,
-                "childAges":[child_ages]
+                "childAges":child_ages
             }
         }
+        logger.info(f"Payload: {payload}")
         headers = {
             "Content-Type": "application/json"
         }

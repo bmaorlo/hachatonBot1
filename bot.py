@@ -11,6 +11,8 @@ import mapping
 import classes.HotelSearcher as HotelSearcher
 import classes.OfferLoader as OfferLoader
 import classes.Proposal as Proposal
+import classes.HotelFilter as HotelFilter
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -158,6 +160,12 @@ def make_search(json_data: str) -> str:
         logger.info(f"Start to search for hotels")
         hotels = HotelSearcher.searchHotels(search_data)
 
+        if "unknown_hotel_preferences" in search_data:
+            assistant_id = os.getenv("ASSISTANT_HOTEL_FILTER_ID")
+            logger.info(f"Start to search for hotels with assistant {assistant_id}")
+            hotels = HotelFilter.searchHotelsWithAssistant(hotels,search_data['unknown_hotel_preferences'], assistant_id)
+
+
         logger.info(f"Hotels: {hotels}")
         # Extract hotel IDs from the search results
         hotel_ids = []
@@ -166,8 +174,8 @@ def make_search(json_data: str) -> str:
 
         logger.info(f"Finished searching for hotels")
 
-        logger.info(f"Start to load offers")
-        offers = OfferLoader.load_offers(muid, hotel_ids, search_data["destinationIds"])
+        logger.info(f"Start to load offers search data: {search_data}")
+        offers = OfferLoader.load_offers(muid, hotel_ids, search_data)
         #logger.info(f"Offers: {offers}")
         logger.info(f"Finished loading offers")
         
@@ -179,7 +187,7 @@ def make_search(json_data: str) -> str:
                     if "offer" in offer_data:
                         offer = offer_data["offer"]
                     offer_details.append({
-                        "offerId": offer["offerId"],
+                        "offerId": offer["hfOfferId"],
                         "capacity": {
                             "adult": offer["capacity"]["adult"],
                             "child": offer["capacity"]["child"],
@@ -210,6 +218,7 @@ def make_search(json_data: str) -> str:
                 offer["capacity"].get("infant", 0),
                 []  # Empty list for child ages
             )
+        #Proposal.add_offer_to_proposal(muid,proposal_id, "m1d248h4110365c20o210525i240525aBERst1", 'BER', 2, 0, 0, [])
         logger.info(f"Finished adding offer to proposal")
 
 

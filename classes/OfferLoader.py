@@ -3,47 +3,105 @@ import requests
 from typing import List, Optional
 from datetime import datetime
 import logging
+import calendar
+
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-def load_offers(muid:str, hotel_ids: List[str], destination_ids: List[int]) -> Optional[dict]:
+def load_offers(muid:str, hotel_ids: List[str], search_data: dict) -> Optional[dict]:
 
     BASE_URL = "https://www.holidayheroes.de/api_no_auth/holiday_finder/offers/"
+
+    if search_data["dates_type"] == "month":
+        periods = search_data["dates_month"]
+        year = 2025
+        periods_array = [
+            {
+                "start": f"01/{month:02d}/{year}",
+                "end": f"{calendar.monthrange(year, month)[1]:02d}/{month:02d}/{year}"
+            }
+            for month in periods
+        ]
+
+        minLos = 3
+        maxLos = 10
+
+        if "dates_los" in search_data:
+            minLos = search_data["dates_los"][0]
+            maxLos = search_data["dates_los"][1]
+        else:
+            minLos = 3
+            maxLos = 10
+
+        whenObj = {
+            "months": {
+                "periods": periods_array,
+                "min": minLos,
+                "max": maxLos,
+                "nights": [minLos, maxLos]
+            }
+        }
+
+    elif search_data["dates_type"] == "specific":
+        # Convert date format from YYYY-MM-DD to DD/MM/YYYY
+        start_date = datetime.strptime(search_data["dates_specific"]['dates_start'], '%Y-%m-%d')
+        end_date = datetime.strptime(search_data["dates_specific"]['dates_end'], '%Y-%m-%d')
+        formatted_start = start_date.strftime('%d/%m/%Y')
+        formatted_end = end_date.strftime('%d/%m/%Y')
+        whenObj = {
+            "specific": {
+                "start": formatted_start,
+                "end": formatted_end
+            }
+        }
+    
+    starRating = []
+    if "rating" in search_data:
+        starRating = search_data["rating"]
+
+    childAges = []
+    if "capacity_children_ages" in search_data:
+        childAges = search_data["capacity_children_ages"]
+
+
+    boardType = []
+    if "hotel_board_type" in search_data:
+        if isinstance(search_data["hotel_board_type"], list) and "all inclusive" in search_data["hotel_board_type"]:
+            boardType = ["AI"]
+        if isinstance(search_data["hotel_board_type"], list) and "breakfast and dinner" in search_data["hotel_board_type"]:
+            boardType = ["HB"]
+        if isinstance(search_data["hotel_board_type"], list) and "breakfast lunch and dinner" in search_data["hotel_board_type"]:
+            boardType = ["FB"]
+        if isinstance(search_data["hotel_board_type"], list) and "with breakfast" in search_data["hotel_board_type"]:
+            boardType = ["BB"]
 
     try:
         # Construct request payload
         payload = {
             "locale": "de",
             "currency": "EUR",
-            "fromwhere": ['BER'],
+            "fromwhere": search_data['from_airport_codes'],
             "engine": {
                 "market": 1,
-                "where": destination_ids,  # Default location ID
-                "when": {
-                    "months": {
-                        "periods": [],
-                        "min": None,
-                        "max": None,
-                        "nights": []
-                    }
-                },
+                "where": search_data["destinationIds"],  # Default location ID
+                "when": whenObj,
                 "who": {
-                    "adult": 2,
-                    "child": 0,
+                    "adult": search_data["capacity_adults_num"],
+                    "child": search_data["capacity_children_num"],
                     "room": 1,
-                    "childAges": []
+                    "childAges": childAges
                 },
                 "what": [],
-                "whereTxt": ["Paris"],
+                "whereTxt": [],
                 "whatTxt": [],
                 "destinationGroups": []
             },
             "filters": {
-                "rating": [],
+                "rating": starRating,
                 "stops": [],
                 "refundable": False,
-                "board": [],
+                "board": boardType,
                 "amenities": [],
                 "amenitiesTxt": [],
                 "luggage": {
