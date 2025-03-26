@@ -160,6 +160,8 @@ def make_search(json_data: str) -> str:
         logger.info(f"Received search request with data: {search_data}")
         if "destination_names" in search_data:
             search_data["destinationIds"] = [mapping.map_destination(destination) for destination in search_data["destination_names"]]
+
+
         if "destination_theme_names" in search_data:
             mapped_ids = destination_theme_mapping.get_destination_ids_by_themes(search_data["destination_theme_names"])
 
@@ -191,7 +193,7 @@ def make_search(json_data: str) -> str:
 
         logger.info("Finished Mapping")
         logger.info("#############")
-        logger.info(f"Destinations ids: {search_data["destinationIds"]}")
+        logger.info(f"Destinations ids: {search_data['destinationIds']}")
         logger.info("########")
 
         logger.info(f"Start to search for hotels")

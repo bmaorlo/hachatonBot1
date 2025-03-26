@@ -269,7 +269,12 @@
     function addMessage(text, sender) {
         const messageDiv = document.createElement('div');
         messageDiv.className = `ai-message ai-${sender}-message`;
-        messageDiv.textContent = text;
+        if (text.includes('https')) {
+            const urlRegex = /(https?:\/\/[^\s]+)/g;
+            messageDiv.innerHTML = text.replace(urlRegex, '<a href="$1" target="_blank">$1</a>');
+        } else {
+            messageDiv.textContent = text;
+        }
         elements.messages.insertBefore(messageDiv, elements.typingIndicator);
         elements.messages.scrollTop = elements.messages.scrollHeight;
     }
