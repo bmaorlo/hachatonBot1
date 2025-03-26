@@ -174,6 +174,7 @@ def make_search(json_data: str) -> str:
 
         logger.info(f"Finished searching for hotels")
 
+
         logger.info(f"Start to load offers search data: {search_data}")
         offers = OfferLoader.load_offers(muid, hotel_ids, search_data)
         #logger.info(f"Offers: {offers}")
