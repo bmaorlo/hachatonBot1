@@ -77,10 +77,8 @@ def load_offers(muid:str, hotel_ids: List[str], destination_ids: List[int]) -> O
         logger.info(f"Making OFFERS API request to: {url}")
         response = requests.get(url)
         response.raise_for_status()
-        
-        #logger.info(f"Response: {response.json()}")
-        
-        return results
+        return response.json()
+
         
     except requests.exceptions.RequestException as e:
         print(f"Error loading offers: {str(e)}")
