@@ -8,10 +8,14 @@ from openai import OpenAI
 from dotenv import load_dotenv
 from datetime import datetime
 import mapping
+import destination_group_mapping
+import destination_theme_mapping
+import hotel_facilities_mapping
 import classes.HotelSearcher as HotelSearcher
 import classes.OfferLoader as OfferLoader
 import classes.Proposal as Proposal
 import classes.HotelFilter as HotelFilter
+from itertools import chain
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -154,8 +158,41 @@ def make_search(json_data: str) -> str:
         # Parse the JSON data
         search_data = json.loads(json_data)
         logger.info(f"Received search request with data: {search_data}")
-        search_data["destinationIds"] = [mapping.map_destination(destination) for destination in search_data["destination_names"]]
-        logger.info(f"Finished Mapping")
+        if "destination_names" in search_data:
+            search_data["destinationIds"] = [mapping.map_destination(destination) for destination in search_data["destination_names"]]
+        if "destination_theme_names" in search_data:
+            mapped_ids = destination_theme_mapping.get_destination_ids_by_themes(search_data["destination_theme_names"])
+
+            if "destinationIds" not in search_data:
+                search_data["destinationIds"] = []
+            search_data["destinationIds"].extend(mapped_ids)
+
+        if "hotel_facilities" in search_data:
+            mapped_ids = hotel_facilities_mapping.get_facilites_ids(search_data["hotel_facilities"])
+
+            if "amenities" not in search_data:
+                search_data["amenities"] = []
+            search_data["amenities"].extend(mapped_ids)
+
+
+        if "destination_group_names" in search_data:
+            mapped_ids = list(chain.from_iterable(
+                destination_group_mapping.get_group_destinations_ids(group_name)
+                for group_name in search_data["destination_group_names"]
+            ))
+
+            if "destinationIds" not in search_data:
+                search_data["destinationIds"] = []
+            search_data["destinationIds"].extend(mapped_ids)
+
+
+        search_data["destinationIds"] = [d for d in search_data["destinationIds"] if d is not None]
+
+
+        logger.info("Finished Mapping")
+        logger.info("#############")
+        logger.info(f"Destinations ids: {search_data["destinationIds"]}")
+        logger.info("########")
 
         logger.info(f"Start to search for hotels")
         hotels = HotelSearcher.searchHotels(search_data)

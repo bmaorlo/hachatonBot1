@@ -11,7 +11,7 @@ def searchHotels(search_params: str) -> str:
     api_params = {
         "destinationIds": search_params.get("destinationIds", []),
         "rating": search_params.get("hotel_stars", []),
-        "amenities": search_params.get("hotel_facilities", []),
+        "amenities": search_params.get("amenities", []),
         "preferences": search_params.get("known_hotel_preferences", [])
     }
 
