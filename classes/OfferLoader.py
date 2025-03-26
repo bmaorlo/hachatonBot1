@@ -27,15 +27,18 @@ def load_offers(muid:str, hotel_ids: List[str], search_data: dict) -> Optional[d
             for month in periods
         ]
 
+        logger.info(f"Maor 1\n")
         minLos = 3
         maxLos = 10
 
-        if "dates_los" in search_data:
+        if "dates_los" in search_data and len(search_data["dates_los"]) > 0:
             minLos = search_data["dates_los"][0]
+            maxLos = minLos
+
+        
+        if "dates_los" in search_data and len(search_data["dates_los"]) > 1:
             maxLos = search_data["dates_los"][1]
-        else:
-            minLos = 3
-            maxLos = 10
+        
 
         whenObj = {
             "months": {
@@ -45,7 +48,7 @@ def load_offers(muid:str, hotel_ids: List[str], search_data: dict) -> Optional[d
                 "nights": [minLos, maxLos]
             }
         }
-
+        logger.info(f"Maor 2\n")
     elif search_data["dates_type"] == "specific":
         # Convert date format from YYYY-MM-DD to DD/MM/YYYY
         start_date = datetime.strptime(search_data["dates_specific"]['dates_start'], '%Y-%m-%d')
@@ -58,7 +61,7 @@ def load_offers(muid:str, hotel_ids: List[str], search_data: dict) -> Optional[d
                 "end": formatted_end
             }
         }
-    
+    logger.info(f"Maor 3\n")
     starRating = []
     if "rating" in search_data:
         starRating = search_data["rating"]
@@ -67,7 +70,7 @@ def load_offers(muid:str, hotel_ids: List[str], search_data: dict) -> Optional[d
     if "capacity_children_ages" in search_data:
         childAges = search_data["capacity_children_ages"]
 
-
+    logger.info(f"Maor 5\n")
     boardType = []
     if "hotel_board_type" in search_data:
         if isinstance(search_data["hotel_board_type"], list) and "all inclusive" in search_data["hotel_board_type"]:
@@ -79,6 +82,18 @@ def load_offers(muid:str, hotel_ids: List[str], search_data: dict) -> Optional[d
         if isinstance(search_data["hotel_board_type"], list) and "with breakfast" in search_data["hotel_board_type"]:
             boardType = ["BB"]
 
+
+    adults = 2
+    if "capacity_adults_num" in search_data:
+        adults= search_data['capacity_adults_num']
+
+    children = 0
+    if "capacity_children_num" in search_data:
+        children= search_data['capacity_children_num']
+
+
+    logger.info(f"Maor 6\n")
+    logger.info(f"minLos: {minLos}, maxLos: {maxLos}, boardType: {boardType}, whenObj: {whenObj}, periods: {periods}, periods_array: {periods_array}, childAges: {childAges}, starRating: {starRating}, search_data: {search_data} \n")
     try:
         # Construct request payload
         payload = {
@@ -90,8 +105,8 @@ def load_offers(muid:str, hotel_ids: List[str], search_data: dict) -> Optional[d
                 "where": search_data["destinationIds"],  # Default location ID
                 "when": whenObj,
                 "who": {
-                    "adult": search_data["capacity_adults_num"],
-                    "child": search_data["capacity_children_num"],
+                    "adult": adults,
+                    "child": children,
                     "room": 1,
                     "childAges": childAges
                 },
@@ -122,7 +137,7 @@ def load_offers(muid:str, hotel_ids: List[str], search_data: dict) -> Optional[d
             "searchUserProfile": 0,
             "onlySpecificHotelIds": "true"
         }
-
+        logger.info(f"Maor 7 {payload}\n")
         results = {}
 
 
@@ -134,6 +149,7 @@ def load_offers(muid:str, hotel_ids: List[str], search_data: dict) -> Optional[d
             }
         
         query_params = f"?data={json.dumps(payload)}&muid=77cb4fd097a64e27fa65d827fcc76b34&t={timestamp}"
+        logger.info(f"Maor 8 {query_params}\n")
 
         url = BASE_URL + query_params
         logger.info(f"Making OFFERS API request to: {url}")
