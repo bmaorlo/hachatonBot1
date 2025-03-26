@@ -1,5 +1,5 @@
 import json
-from typing import Dict
+from typing import Dict, List
 from mapping import map_destination
 
 destination_group_mapping = {
@@ -91,6 +91,6 @@ group_to_destinations = {
 def map_destination_group(destination: str) -> int:
     return destination_group_mapping.get(destination, None)
 
-def  get_group_destinations_ids(group: str) -> list[int]:
+def get_group_destinations_ids(group: str) -> List[int]:
     destinations = group_to_destinations.get(group, [])
     return [map_destination(destination) for destination in destinations]
