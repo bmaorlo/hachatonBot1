@@ -64,6 +64,7 @@ def load_offers(muid:str, hotel_ids: List[str], destination_ids: List[int]) -> O
 
         results = {}
 
+
         timestamp = int(datetime.now().timestamp() * 1000)
         api_params = {
                 "data": json.dumps(payload),
