@@ -5,11 +5,14 @@ from datetime import datetime
 import logging
 import calendar
 
-
+#const script = document.createElement('script');
+#   script.src = 'https://bot.local/chat-panel.js';
+#   document.body.appendChild(script);
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 def load_offers(muid:str, hotel_ids: List[str], search_data: dict) -> Optional[dict]:
+
 
     BASE_URL = "https://www.holidayheroes.de/api_no_auth/holiday_finder/offers/"
 
