@@ -156,7 +156,22 @@
                 Hello! I'm your AI assistant. How can I help you today?
             </div>
             <div class="typing-indicator" id="typing-indicator">
-                Assistant is typing...
+                <span id="typing-text">Assistant is processing your request...</span>
+                <script>
+                    const typingMessages = [
+                        "Searching for offers with your needs...",
+                        "Collecting information...", 
+                        "Analyzing your request...",
+                        "Preparing your proposal..."
+                    ];
+                    let currentIndex = 0;
+                    
+                    setInterval(() => {
+                        const typingText = document.getElementById('typing-text');
+                        typingText.textContent = typingMessages[currentIndex];
+                        currentIndex = (currentIndex + 1) % typingMessages.length;
+                    }, 4000);
+                </script>
             </div>
         </div>
         <div class="chat-input">

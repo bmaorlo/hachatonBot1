@@ -129,7 +129,7 @@ def load_offers(muid:str, hotel_ids: List[str], search_data: dict) -> Optional[d
                 "flex": False
             },
             "sort": {"best": -1},
-            "limit": 10,
+            "limit": 20,
             "offset": 0,
             "specificHotel": {
                 "hotel_id": hotel_ids

@@ -158,6 +158,9 @@ def make_search(json_data: str) -> str:
         # Parse the JSON data
         search_data = json.loads(json_data)
         logger.info(f"Received search request with data: {search_data}")
+        if "destination_anywhere" in search_data:
+            search_data["destinationIds"] = []
+            
         if "destination_names" in search_data:
             search_data["destinationIds"] = [mapping.map_destination(destination) for destination in search_data["destination_names"]]
 
@@ -199,7 +202,7 @@ def make_search(json_data: str) -> str:
         logger.info(f"Start to search for hotels")
         hotels = HotelSearcher.searchHotels(search_data)
 
-        if "unknown_hotel_preferences" in search_data:
+        if "unknown_hotel_preferences" in search_data and search_data["unknown_hotel_preferences"]:
             assistant_id = os.getenv("ASSISTANT_HOTEL_FILTER_ID")
             logger.info(f"Start to search for hotels with assistant {assistant_id}")
             hotels = HotelFilter.searchHotelsWithAssistant(hotels,search_data['unknown_hotel_preferences'], assistant_id)
@@ -220,12 +223,15 @@ def make_search(json_data: str) -> str:
         logger.info(f"Finished loading offers")
         
         # Collect offer IDslo and capacities
+        capacity_adult = 2
+        capacity_child = 0
         offer_details = []
         if "data" in offers:
             if "offers" in offers["data"]:
                 for offer_data in offers["data"]["offers"]:
                     if "offer" in offer_data:
                         offer = offer_data["offer"]
+                        capacityString = f"{offer['capacity']['adult']}-{offer['capacity']['child']}"
                     offer_details.append({
                         "offerId": offer["hfOfferId"],
                         "capacity": {
@@ -239,32 +245,35 @@ def make_search(json_data: str) -> str:
         
         
         logger.info(f"Start to create client")
-        client_id = Proposal.create_client(muid,"Dror", "Kashiaaaa", "droasdasdr@dror.com", "972542606060", "Mr")
+        client_id = Proposal.create_client(muid,search_data['customer_first_name'], search_data['customer_last_name'],"drork@drorio.wearemove.io", 972542601022, "Mr")
         logger.info(f"Finished creating client {client_id}")
 
         logger.info(f"Start to create proposal")
-        proposal_id = Proposal.createProposal(muid,client_id, 'Proposal for Dror Kashi2', '2-0', '', '')
+        proposal_id = Proposal.createProposal(muid,client_id, search_data['proposal_name'], capacityString, '', '',search_data['proposal_details'])
         logger.info(f"Finished creating proposal {proposal_id}")
 
         logger.info(f"Start to add offer to proposal")
+        totaloffers = 0
         for offer in offer_details:
-            Proposal.add_offer_to_proposal(
-                muid,
-                proposal_id, 
-                offer["offerId"],
-                'BER',  # Default departure airport
-                offer["capacity"]["adult"],
-                offer["capacity"]["child"],
-                offer["capacity"].get("infant", 0),
-                []  # Empty list for child ages
-            )
+            totaloffers += 1
+            if totaloffers < 11:
+                Proposal.add_offer_to_proposal(
+                    muid,
+                    proposal_id, 
+                    offer["offerId"],
+                    'BER',  # Default departure airport
+                    offer["capacity"]["adult"],
+                    offer["capacity"]["child"],
+                    offer["capacity"].get("infant", 0),
+                    []  # Empty list for child ages
+                )
         #Proposal.add_offer_to_proposal(muid,proposal_id, "m1d248h4110365c20o210525i240525aBERst1", 'BER', 2, 0, 0, [])
         logger.info(f"Finished adding offer to proposal")
 
 
         return json.dumps({
             "status": "success",
-            "message": f"Search completed here is the link to the offers https://agent.holidayheroes.com/holidayfinder/proposal/view/{proposal_id}",
+            "message": f"those are the hotels {offer_details} and the proposal page is here https://agent.holidayheroes.com/holidayfinder/proposal/view/{proposal_id}??b2bcustomerview=true",
             "data": search_data
         })
     except json.JSONDecodeError:

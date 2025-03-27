@@ -87,7 +87,7 @@ def add_offer_to_proposal(muid:int, proposal_id:int, offer_id:int, airport:str, 
         raise
 
 
-def createProposal(muid:int, client_id:int, proposal_name:str, searchCapacity:str, searchContext:str, searchDuration:str) -> int:
+def createProposal(muid:int, client_id:int, proposal_name:str, searchCapacity:str, searchContext:str, searchDuration:str,description:str) -> int:
     logger.info(f"Creating Proposal for client {client_id}")
     try:
         url = f"https://agent.holidayheroes.com/api/v-6/v6-release/b2b/proposal?muid={muid}&locale=en"
@@ -97,7 +97,8 @@ def createProposal(muid:int, client_id:int, proposal_name:str, searchCapacity:st
             "name": proposal_name,
             "searchCapacity": searchCapacity,
             "searchContext": searchContext,
-            "searchDuration": searchDuration
+            "searchDuration": searchDuration,
+            "description": description
         }
         
         headers = {
