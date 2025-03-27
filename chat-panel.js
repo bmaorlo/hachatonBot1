@@ -189,7 +189,7 @@
                         Hello, let me help you help your client finding the best holiday for his wishes
                     </div>
                     <div class="ai-typing-indicator">
-                        Assistant is typing...
+                       <img src="https://d16tr0byigrcd.cloudfront.net/hfde/images/loader-anim-brand-2.png" style="width: 20px; height: 20px;"> Assistant is typing...
                     </div>
                 </div>
                 <div class="ai-chat-input">
